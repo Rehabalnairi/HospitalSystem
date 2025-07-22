@@ -1,106 +1,102 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace HospitalSystem
 {
-    internal class Program
+    class Person
     {
-        static List<Doctor> doctors = new List<Doctor>();
-        static List<Patient> patients = new List<Patient>();
-        static List<Appointment> appointments = new List<Appointment>();
+        public string Id { get; set; }
+        public string Name { get; set; }
 
-        // Base class: Person
-        class Person
+        public Person(string name)
         {
-            public string Id { get; set; }
-            public string Name { get; set; }
-
-            public Person(string name)
-            {
-                Id = Guid.NewGuid().ToString();
-                Name = name;
-            }
-
-            public virtual void DisplayInfo()
-            {
-                Console.WriteLine($"ID: {Id}");
-                Console.WriteLine($"Name: {Name}");
-            }
+            Id = Guid.NewGuid().ToString();
+            Name = name;
         }
 
-        // Doctor class
-        class Doctor : Person
+        public virtual void DisplayInfo()
         {
-            public string Specialization { get; set; }
-            public List<DateTime> AvailableAppointments { get; set; }
+            Console.WriteLine($"ID: {Id}");
+            Console.WriteLine($"Name: {Name}");
+        }
+    }
 
-            public Doctor(string name, string specialization, List<DateTime> availableAppointments)
-                : base(name)
-            {
-                Specialization = specialization;
-                AvailableAppointments = availableAppointments;
-            }
+    class Doctor : Person
+    {
+        public string Specialization { get; set; }
+        public List<DateTime> AvailableAppointments { get; set; }
 
-            public override void DisplayInfo()
-            {
-                base.DisplayInfo();
-                Console.WriteLine($"Specialization: {Specialization}");
-                Console.WriteLine("Available Appointments:");
-                foreach (var date in AvailableAppointments)
-                {
-                    Console.WriteLine($" - {date:dd/MM/yyyy}");
-                }
-            }
+        public Doctor(string name, string specialization, List<DateTime> availableAppointments)
+            : base(name)
+        {
+            Specialization = specialization;
+            AvailableAppointments = availableAppointments;
         }
 
-        // Patient class
-        class Patient : Person
+        public override void DisplayInfo()
         {
-            public int Age { get; set; }
-            public string PhoneNumber { get; set; }
-
-            public Patient(string name, int age, string phoneNumber)
-                : base(name)
+            base.DisplayInfo();
+            Console.WriteLine($"Specialization: {Specialization}");
+            Console.WriteLine("Available Appointments:");
+            foreach (var date in AvailableAppointments)
             {
-                Age = age;
-                PhoneNumber = phoneNumber;
-            }
-
-            public override void DisplayInfo()
-            {
-                base.DisplayInfo();
-                Console.WriteLine($"Age: {Age}");
-                Console.WriteLine($"Phone Number: {PhoneNumber}");
+                Console.WriteLine($" - {date:dd/MM/yyyy}");
             }
         }
+    }
 
-        // Appointment class
-        class Appointment
+    class Patient : Person
+    {
+        public int Age { get; set; }
+        public string PhoneNumber { get; set; }
+
+        public Patient(string name, int age, string phoneNumber)
+            : base(name)
         {
-            public string Id { get; set; }
-            public Doctor Doctor { get; set; }
-            public Patient Patient { get; set; }
-            public DateTime AppointmentDate { get; set; }
-
-            public Appointment(Doctor doctor, Patient patient, DateTime appointmentDate)
-            {
-                Id = Guid.NewGuid().ToString();
-                Doctor = doctor;
-                Patient = patient;
-                AppointmentDate = appointmentDate;
-            }
-
-            public void DisplayAppointmentInfo()
-            {
-                Console.WriteLine($"Appointment ID: {Id}");
-                Console.WriteLine($"Doctor: {Doctor.Name} ({Doctor.Specialization})");
-                Console.WriteLine($"Patient: {Patient.Name} (Age: {Patient.Age})");
-                Console.WriteLine($"Appointment Date: {AppointmentDate:dd/MM/yyyy}");
-            }
+            Age = age;
+            PhoneNumber = phoneNumber;
         }
 
-        // Method to add a new doctor
-        static void AddDoctor()
+        public override void DisplayInfo()
+        {
+            base.DisplayInfo();
+            Console.WriteLine($"Age: {Age}");
+            Console.WriteLine($"Phone Number: {PhoneNumber}");
+        }
+    }
+
+    class Appointment
+    {
+        public string Id { get; set; }
+        public Doctor Doctor { get; set; }
+        public Patient Patient { get; set; }
+        public DateTime AppointmentDate { get; set; }
+
+        public Appointment(Doctor doctor, Patient patient, DateTime appointmentDate)
+        {
+            Id = Guid.NewGuid().ToString();
+            Doctor = doctor;
+            Patient = patient;
+            AppointmentDate = appointmentDate;
+        }
+
+        public void DisplayAppointmentInfo()
+        {
+            Console.WriteLine($"Appointment ID: {Id}");
+            Console.WriteLine($"Doctor: {Doctor.Name} ({Doctor.Specialization})");
+            Console.WriteLine($"Patient: {Patient.Name} (Age: {Patient.Age})");
+            Console.WriteLine($"Appointment Date: {AppointmentDate:dd/MM/yyyy}");
+        }
+    }
+
+    class Hospital
+    {
+        private List<Doctor> doctors = new List<Doctor>();
+        private List<Patient> patients = new List<Patient>();
+        private List<Appointment> appointments = new List<Appointment>();
+
+        public void AddDoctor()
         {
             Console.Write("Enter Doctor Name: ");
             string name = Console.ReadLine();
@@ -123,8 +119,7 @@ namespace HospitalSystem
             Console.WriteLine("Doctor added successfully.\n");
         }
 
-        // Method to add a new patient
-        static void AddPatient()
+        public void AddPatient()
         {
             Console.Write("Enter Patient Name: ");
             string name = Console.ReadLine();
@@ -138,8 +133,7 @@ namespace HospitalSystem
             Console.WriteLine("Patient added successfully.\n");
         }
 
-        // Method to book an appointment
-        static void BookAppointment()
+        public void BookAppointment()
         {
             if (doctors.Count == 0 || patients.Count == 0)
             {
@@ -184,15 +178,24 @@ namespace HospitalSystem
             int dateIndex = int.Parse(Console.ReadLine()) - 1;
 
             DateTime appointmentDate = selectedDoctor.AvailableAppointments[dateIndex];
-            selectedDoctor.AvailableAppointments.RemoveAt(dateIndex);
 
+            // Prevent double-booking a doctor
+            bool isBooked = appointments.Any(a =>
+                a.Doctor == selectedDoctor && a.AppointmentDate.Date == appointmentDate.Date);
+
+            if (isBooked)
+            {
+                Console.WriteLine("This appointment slot is already booked.\n");
+                return;
+            }
+
+            selectedDoctor.AvailableAppointments.RemoveAt(dateIndex);
             var appointment = new Appointment(selectedDoctor, selectedPatient, appointmentDate);
             appointments.Add(appointment);
             Console.WriteLine("Appointment booked successfully.\n");
         }
 
-        // Method to display all appointments
-        static void DisplayAllAppointments()
+        public void DisplayAllAppointments()
         {
             if (appointments.Count == 0)
             {
@@ -207,8 +210,7 @@ namespace HospitalSystem
             }
         }
 
-        // Method to show doctors by specialization
-        static void ShowDoctorsBySpecialization()
+        public void ShowDoctorsBySpecialization()
         {
             Console.Write("Enter specialization to search: ");
             string spec = Console.ReadLine();
@@ -228,18 +230,63 @@ namespace HospitalSystem
             }
         }
 
-        // Main menu
+        public void SearchAppointmentsByPatientName()
+        {
+            Console.Write("Enter patient name to search: ");
+            string name = Console.ReadLine();
+
+            var results = appointments.Where(a => a.Patient.Name.Equals(name, StringComparison.OrdinalIgnoreCase)).ToList();
+
+            if (results.Count == 0)
+            {
+                Console.WriteLine("No appointments found for that patient.\n");
+                return;
+            }
+
+            foreach (var app in results)
+            {
+                app.DisplayAppointmentInfo();
+                Console.WriteLine();
+            }
+        }
+
+        public void SearchAppointmentsByDate()
+        {
+            Console.Write("Enter date to search (yyyy-MM-dd): ");
+            DateTime date = DateTime.Parse(Console.ReadLine());
+
+            var results = appointments.Where(a => a.AppointmentDate.Date == date.Date).ToList();
+
+            if (results.Count == 0)
+            {
+                Console.WriteLine("No appointments found on that date.\n");
+                return;
+            }
+
+            foreach (var app in results)
+            {
+                app.DisplayAppointmentInfo();
+                Console.WriteLine();
+            }
+
+
+        }
+
         static void Main(string[] args)
         {
+            Hospital hospital = new Hospital();
+
             while (true)
             {
-                Console.WriteLine("Hospital System Menu:");
+                Console.WriteLine("\nHospital System Menu:");
                 Console.WriteLine("1. Add Doctor");
                 Console.WriteLine("2. Add Patient");
                 Console.WriteLine("3. Book Appointment");
                 Console.WriteLine("4. Display All Appointments");
                 Console.WriteLine("5. Show Doctors by Specialization");
-                Console.WriteLine("6. Exit");
+                Console.WriteLine("6. Search Appointments by Patient Name");
+                Console.WriteLine("7. Search Appointments by Date");
+                Console.WriteLine("8. Exit");
                 Console.Write("Choose an option: ");
 
                 string choice = Console.ReadLine();
@@ -247,12 +294,14 @@ namespace HospitalSystem
 
                 switch (choice)
                 {
-                    case "1": AddDoctor(); break;
-                    case "2": AddPatient(); break;
-                    case "3": BookAppointment(); break;
-                    case "4": DisplayAllAppointments(); break;
-                    case "5": ShowDoctorsBySpecialization(); break;
-                    case "6": return;
+                    case "1": hospital.AddDoctor(); break;
+                    case "2": hospital.AddPatient(); break;
+                    case "3": hospital.BookAppointment(); break;
+                    case "4": hospital.DisplayAllAppointments(); break;
+                    case "5": hospital.ShowDoctorsBySpecialization(); break;
+                    case "6": hospital.SearchAppointmentsByPatientName(); break;
+                    case "7": hospital.SearchAppointmentsByDate(); break;
+                    case "8": return;
                     default: Console.WriteLine("Invalid choice.\n"); break;
                 }
             }
