@@ -1,22 +1,26 @@
-﻿namespace HospitalSystem
+﻿using System.Collections.Generic;
+
+namespace HospitalSystem
 {
     internal class Program
     {
-        // Create a base class: Person
-
+        //Create and use the following lists: Dictors, Patients, Appointments
+        List<Doctor> doctors = new List<Doctor>();
+        List<Patient> patients = new List<Patient>();
+        List<Appointment> appointments = new List<Appointment>();
 
         // Base class: Person
         class Person
         {
             public string Id { get; set; }
             public string Name { get; set; }
-          
+
 
             public Person(string name, int age)
             {
                 Id = Guid.NewGuid().ToString();
                 Name = name;
-              
+
             }
 
             public virtual void DisplayInfo() // Method to display person information
@@ -37,7 +41,7 @@
             public List<DateTime> AvailableAppointments { get; set; }
 
             public Doctor(int id, string name, string specialization, List<DateTime> availableAppointments)
-                : base(name,id)
+                : base(name, id)
             {
                 Specialization = specialization;
                 AvailableAppointments = availableAppointments;
@@ -62,7 +66,7 @@
             public string PhoneNumber { get; set; }
 
             public Patient(int id, string name, int age, string phoneNumber)
-                : base(name,id)
+                : base(name, id)
             {
                 Age = age;
                 PhoneNumber = phoneNumber;
@@ -102,17 +106,26 @@
         static void Main(string[] args)
         {
             // Create instances of Doctor and Patient
-            var doctor = new Doctor("Dr. Smith", "Cardiology", new List<DateTime> { DateTime.Now.AddDays(1), DateTime.Now.AddDays(2) });
-            var patient = new Patient("John Doe", 30, "123-456-7890");
-            // Display information
+            var doctor = new Doctor(1, "Dr. Smith", "Cardiology", new List<DateTime>
+            {
+               DateTime.Now.AddDays(1),
+               DateTime.Now.AddDays(2)
+             });
+
+            var patient = new Patient(101, "John Doe", 30, "123-456-7890");
+
+            // Use the instance names (doctor, patient)
             doctor.DisplayInfo();
             Console.WriteLine();
             patient.DisplayInfo();
             Console.WriteLine();
+
             // Create an appointment
-            var appointment = new Appointment(doctor, patient, DateTime.Now.AddDays(1));
-            appointment.DisplayAppointmentInfo();
+            
+            var appointment = new Appointment(1001, doctor, patient, DateTime.Now.AddDays(1));
+            appointment.DisplayInfo();
             Console.ReadLine();
+
         }
     }
-} 
+}
