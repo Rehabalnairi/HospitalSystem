@@ -229,7 +229,7 @@ namespace HospitalSystem
                 Console.WriteLine();
             }
         }
-
+        /// Search appointments by patient name or date
         public void SearchAppointmentsByPatientName()
         {
             Console.Write("Enter patient name to search: ");
@@ -249,7 +249,7 @@ namespace HospitalSystem
                 Console.WriteLine();
             }
         }
-
+        
         public void SearchAppointmentsByDate()
         {
             Console.Write("Enter date to search (yyyy-MM-dd): ");
